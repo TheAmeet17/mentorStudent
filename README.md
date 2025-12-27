@@ -1,8 +1,10 @@
 ## 🌐 Live Hosted URL
 Base URL: https://mentorstudent-1.onrender.com
 
-# Mentor-Student System
+📬 API Testing (Postman):
+https://amitniraula.postman.co/workspace/Amit-Niraula's-Workspace~adc6d25b-1f47-4f50-845f-2385182a2d47/collection/46794009-3a5b3a3a-231f-44a2-a2dc-39e7fee0b223?action=share&source=copy-link&creator=46794009
 
+# Mentor-Student System
 A backend system for managing mentor-student interactions, assignments, and submissions. Built with Node.js, Express, Prisma, and PostgreSQL.
 
 ## Features
