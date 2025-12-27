@@ -31,7 +31,7 @@ export const protect = async (
     req.user = decoded;
     next();
   } catch (error: any) {
-    console.error("Auth Error:", error.message);
+    // console.log("Auth Error:", error.message); // Optional: use debug log if needed
     next(new AppError(`Auth Failed: ${error.message}`, 401));
   }
 };
