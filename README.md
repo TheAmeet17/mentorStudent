@@ -1,3 +1,6 @@
+## 🌐 Live Hosted URL
+Base URL: https://mentorstudent-1.onrender.com
+
 # Mentor-Student System
 
 A backend system for managing mentor-student interactions, assignments, and submissions. Built with Node.js, Express, Prisma, and PostgreSQL.
@@ -117,3 +120,5 @@ You can use the Swagger UI to create users, assignments, and test authentication
 - `src/routes`: Defines API route definitions.
 - `src/middleware`: Auth and validation middleware.
 - `src/connect`: Database connection configuration.
+
+
