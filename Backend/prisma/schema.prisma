@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url removed! Prisma 7+ reads it from prisma.config.ts
+}
+
+model Mentor {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  students    Student[]
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Student {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  mentor      Mentor       @relation(fields: [mentorId], references: [id])
+  mentorId    String
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Assignment {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  dueDate     DateTime
+  mentor      Mentor       @relation(fields: [mentorId], references: [id])
+  mentorId    String
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Submission {
+  id           String       @id @default(uuid())
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  assignmentId String
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  submittedAt  DateTime     @default(now())
+  status       String       @default("pending")
+  feedback     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
