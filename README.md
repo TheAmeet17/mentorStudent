@@ -95,12 +95,12 @@ A backend system for managing mentor-student interactions, assignments, and subm
 - `GET /api/students/:id/progress` - Get student progress (Mentor only).
 
 ### Submissions
-- `GET /api/submissions` - Get all submissions (Mentor only).
-- `POST /api/submissions` - Submit an assignment (Student only).
-- `GET /api/submissions/:id` - Get submission by ID.
-- `GET /api/submissions/assignment/:assignmentId` - Get submissions by assignment.
-- `GET /api/submissions/student/:studentId` - Get submissions by student.
-- `PUT /api/submissions/:id/review` - Review submission (Mentor only).
+- `GET /api/submissions` - Get all submissions.(mentor)
+- `POST /api/submissions` - Submit an assignment.(student)
+- `GET /api/submissions/:id` - Get submission by ID.(mentor)
+- `GET /api/submissions/assignment/:assignmentId` - Get submissions by assignment (student)
+- `GET /api/submissions/student/:studentId` - Get submissions by student.(student)
+- `PUT /api/submissions/:id/review` - Review submission.(mentor)
 
 ## API Documentation
 
