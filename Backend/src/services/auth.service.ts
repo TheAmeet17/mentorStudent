@@ -2,9 +2,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../connect/prisma.js";
 import { createAccessToken } from "../jwt/token.js";
+import { AppError } from "../utils/appError.js";
 
 export const signupUserService = async ({ name, email, password }: any) => {
-  if (!name || !email || !password) throw new Error("All fields are required");
+  if (!name || !email || !password) throw new AppError("All fields are required", 400);
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -22,7 +23,7 @@ export const signupUserService = async ({ name, email, password }: any) => {
 };
 
 export const loginUserService = async ({ email, password }: any) => {
-  if (!email || !password) throw new Error("Email and password are required");
+  if (!email || !password) throw new AppError("Email and password are required", 400);
 
   // Check for Mentor, then Student
   let user: any = await prisma.mentor.findUnique({ where: { email } });
@@ -33,10 +34,10 @@ export const loginUserService = async ({ email, password }: any) => {
     role = "student";
   }
 
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found", 404);
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) throw new Error("Invalid password");
+  if (!isPasswordValid) throw new AppError("Invalid password", 401);
 
   const token = createAccessToken(user.id, user.email, role);
 

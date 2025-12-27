@@ -1,4 +1,5 @@
 import prisma from "../connect/prisma.js";
+import { AppError } from "../utils/appError.js";
 
 export const createSubmissionService = async (data: any) => {
     // Check if assignment exists
@@ -6,7 +7,7 @@ export const createSubmissionService = async (data: any) => {
       where: { id: data.assignmentId },
     });
     if (!assignment) {
-      throw new Error("Assignment not found");
+      throw new AppError("Assignment not found", 404);
     }
   
     // Check if student exists
@@ -14,7 +15,7 @@ export const createSubmissionService = async (data: any) => {
       where: { id: data.studentId },
     });
     if (!student) {
-      throw new Error("Student not found");
+      throw new AppError("Student not found", 404);
     }
   
     // Create submission
@@ -48,7 +49,7 @@ export const getAllSubmissionsService = async (mentorId?: string) => {
 
 export const getSubmissionByIdService = async (id: string) => {
   const submission = await prisma.submission.findUnique({ where: { id } });
-  if (!submission) throw new Error("Submission not found");
+  if (!submission) throw new AppError("Submission not found", 404);
   return { message: "Submission fetched", submission };
 };
 
@@ -74,10 +75,10 @@ export const reviewSubmissionService = async (id: string, data: any, mentorId?: 
       include: { assignment: true }
     });
     
-    if (!submission) throw new Error("Submission not found");
+    if (!submission) throw new AppError("Submission not found", 404);
     
     if (submission.assignment.mentorId !== mentorId) {
-      throw new Error("Unauthorized: You can only review submissions for your own assignments");
+      throw new AppError("Unauthorized: You can only review submissions for your own assignments", 403);
     }
   }
 

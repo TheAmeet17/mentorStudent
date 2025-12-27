@@ -1,4 +1,5 @@
 import prisma from "../connect/prisma.js";
+import { AppError } from "../utils/appError.js";
 
 import bcrypt from "bcrypt";
 
@@ -26,26 +27,18 @@ export const getAllStudentsService = async (page: number = 1, limit: number = 10
 
 export const getStudentByIdService = async (id: string) => {
   const student = await prisma.student.findUnique({ where: { id } });
-  if (!student) throw new Error("Student not found");
+  if (!student) throw new AppError("Student not found", 404);
   return { message: "Student fetched", student };
 };
 
 export const updateStudentService = async (id: string, data: any, mentorId?: string) => {
   // If mentorId given, ensure student belongs to them
-  const whereClause = mentorId ? { id, mentorId } : { id };
-
   // Check existence first for better error message or let prisma fail
-  // Using updateMany is safer for permission checks but update({where}) throws if not found
-  // For 'update' with composite unique/id check, typically need findFirst or catch error.
-  // Prisma update() requires logic 'where' to be a unique key. 
-  // 'id' is unique, but 'id + mentorId' isn't a primary composite key in schema.
-  // So we must check permissions first.
   
   if (mentorId) {
     const student = await prisma.student.findUnique({ where: { id } });
-    if (!student || student.mentorId !== mentorId) {
-      throw new Error("Student not found or unauthorized");
-    }
+    if (!student) throw new AppError("Student not found", 404);
+    if (student.mentorId !== mentorId) throw new AppError("Unauthorized access to this student", 403);
   }
 
   const student = await prisma.student.update({ where: { id }, data });
@@ -55,9 +48,8 @@ export const updateStudentService = async (id: string, data: any, mentorId?: str
 export const deleteStudentService = async (id: string, mentorId?: string) => {
   if (mentorId) {
     const student = await prisma.student.findUnique({ where: { id } });
-    if (!student || student.mentorId !== mentorId) {
-      throw new Error("Student not found or unauthorized");
-    }
+    if (!student) throw new AppError("Student not found", 404);
+    if (student.mentorId !== mentorId) throw new AppError("Unauthorized access to this student", 403);
   }
   await prisma.student.delete({ where: { id } });
   return { message: "Student deleted" };
@@ -66,11 +58,11 @@ export const deleteStudentService = async (id: string, mentorId?: string) => {
 export const getStudentProgressService = async (studentId: string, mentorId?: string) => {
     // 1. Get student to find mentor
     const student = await prisma.student.findUnique({ where: { id: studentId } });
-    if (!student) throw new Error("Student not found");
+    if (!student) throw new AppError("Student not found", 404);
 
     // Scoping check
     if (mentorId && student.mentorId !== mentorId) {
-        throw new Error("Unauthorized access to student progress");
+        throw new AppError("Unauthorized access to student progress", 403);
     }
 
     // 2. Count total assignments from the mentor

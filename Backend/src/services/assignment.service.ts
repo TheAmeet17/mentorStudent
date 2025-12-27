@@ -1,4 +1,5 @@
 import prisma from "../connect/prisma.js";
+import { AppError } from "../utils/appError.js";
 
 export const createAssignmentService = async (data: any) => {
   if (Array.isArray(data)) {
@@ -30,16 +31,15 @@ export const getAllAssignmentsService = async (page: number = 1, limit: number =
 
 export const getAssignmentByIdService = async (id: string) => {
   const assignment = await prisma.assignment.findUnique({ where: { id } });
-  if (!assignment) throw new Error("Assignment not found");
+  if (!assignment) throw new AppError("Assignment not found", 404);
   return { message: "Assignment fetched", assignment };
 };
 
 export const updateAssignmentService = async (id: string, data: any, mentorId?: string) => {
   if (mentorId) {
     const assignment = await prisma.assignment.findUnique({ where: { id } });
-    if (!assignment || assignment.mentorId !== mentorId) {
-      throw new Error("Assignment not found or unauthorized");
-    }
+    if (!assignment) throw new AppError("Assignment not found", 404);
+    if (assignment.mentorId !== mentorId) throw new AppError("Unauthorized access to this assignment", 403);
   }
   const assignment = await prisma.assignment.update({ where: { id }, data });
   return { message: "Assignment updated", assignment };
@@ -48,9 +48,8 @@ export const updateAssignmentService = async (id: string, data: any, mentorId?: 
 export const deleteAssignmentService = async (id: string, mentorId?: string) => {
   if (mentorId) {
     const assignment = await prisma.assignment.findUnique({ where: { id } });
-    if (!assignment || assignment.mentorId !== mentorId) {
-      throw new Error("Assignment not found or unauthorized");
-    }
+    if (!assignment) throw new AppError("Assignment not found", 404);
+    if (assignment.mentorId !== mentorId) throw new AppError("Unauthorized access to this assignment", 403);
   }
   await prisma.assignment.delete({ where: { id } });
   return { message: "Assignment deleted" };
@@ -58,15 +57,15 @@ export const deleteAssignmentService = async (id: string, mentorId?: string) => 
 
 export const assignToStudentsService = async (assignmentId: string, data: any, mentorId?: string) => {
   const { studentIds } = data;
-  if (!studentIds || !Array.isArray(studentIds)) throw new Error("studentIds array required");
+  if (!studentIds || !Array.isArray(studentIds)) throw new AppError("studentIds array required", 400);
 
   // Check if assignment exists
   const assignment = await prisma.assignment.findUnique({ where: { id: assignmentId } });
-  if (!assignment) throw new Error("Assignment not found");
+  if (!assignment) throw new AppError("Assignment not found", 404);
   
   // Verify ownership
   if (mentorId && assignment.mentorId !== mentorId) {
-    throw new Error("Unauthorized to assign to this assignment");
+    throw new AppError("Unauthorized to assign to this assignment", 403);
   }
 
   // Validate student IDs
@@ -78,7 +77,7 @@ export const assignToStudentsService = async (assignmentId: string, data: any, m
   if (students.length !== studentIds.length) {
     const foundIds = students.map(s => s.id);
     const missingIds = studentIds.filter((id: string) => !foundIds.includes(id));
-    throw new Error(`Invalid Student IDs found: ${missingIds.join(", ")}`);
+    throw new AppError(`Invalid Student IDs found: ${missingIds.join(", ")}`, 400);
   }
 
   const submissions = studentIds.map((studentId: string) =>

@@ -29,13 +29,33 @@ app.use('/api/students', studentRouter);
 app.use('/api/submissions', submissionRouter);
 
 
+// Handle 404 - Keep this as the LAST route handler
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
 
 app.use(globalErrorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
   console.log(`Swagger JSON available at http://localhost:${PORT}/api-docs.json`);
+});
+
+// Handle unhandled promise rejections (e.g. database connection failed)
+process.on('unhandledRejection', (err: any) => {
+  console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// Handle uncaught exceptions (e.g. sync coding errors)
+process.on('uncaughtException', (err: any) => {
+  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  process.exit(1);
 });
 
 export default app;
